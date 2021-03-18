@@ -70,10 +70,13 @@ def index():
         # Imprimir los distintos endopoints disponibles
         result = "<h1>Bienvenido!!</h1>"
         result += "<h2>Endpoints disponibles:</h2>"
-        result += "<h3>[GET] /reset --> borrar y crear la base de datos</h3>"
+        result += '<button type="button" class="btn active btn-md btn-outline-primary"> Reset </button> <div class="jumbotron">'
+        
         result += "<h3>[GET] /personas?limit=[]&offset=[] --> mostrar el listado de personas (limite and offset are optional)</h3>"
         result += "<h3>[POST] /registro --> ingresar nuevo registro de pulsaciones por JSON</h3>"
         result += "<h3>[GET] /comparativa --> mostrar un gráfico que compare cuantas personas hay de cada nacionalidad"
+        result += "<h5>[HOLA MUNDO] /Hola Mundo"
+        
         
         return(result)
     except:
@@ -94,14 +97,19 @@ def reset():
 @app.route("/personas")
 def personas():
     try:
-        # Alumno:
+        #Alumno:
         # Implementar la captura de limit y offset de los argumentos
         # de la URL
-        # limit = ...
-        # offset = ....
+        limit = str(request.args.get('limit'))
+        offset = str(request.args.get('offset'))
 
         # Debe verificar si el limit y offset son válidos cuando
         # no son especificados en la URL
+        if (limit is not None) and (limit.isdigit()):
+            limit = int(limit)
+        if (offset is not None) and (offset.isdigit()):
+            offset = int(offset)
+
 
         limit = 0
         offset = 0
@@ -123,7 +131,26 @@ def comparativa():
                     respectivas edades</h3>'''
         result += '''<h3>Esa funcion debe devolver los datos que necesite
                     para implementar el grafico a mostrar</h3>'''
-        return (result)
+        # Busco la información, para eso lo traigo desde el script persona_orm.py
+        personas  = persona.report()
+        
+        name = []
+        age = []
+        for i in personas:
+            name.append(i['name'])
+            age.append(i['age'])
+        
+        
+        # Dibujo el gráfico
+        fig, ax = plt.subplots(figsize=(16, 9))
+        fig.suptitle('Graphic desing is my passion')
+        ax.plot(name, age)
+        ax.get_xaxis().set_visible(True)
+        output = io.BytesIO()
+        FigureCanvas(fig).print_png(output)
+        plt.close(fig)
+
+        return Response(output.getvalue(), mimetype='image/png')
     except:
         return jsonify({'trace': traceback.format_exc()})
 
@@ -134,11 +161,11 @@ def registro():
         try:
             # Alumno:
             # Obtener del HTTP POST JSON el nombre y los pulsos
-            # name = ...
-            # age = ...
-            # nationality = ...
+            name = str(request.form.get('name'))
+            age = str(request.form.get('age'))
+            nationality = str(request.form.get('nationality'))
 
-            # persona.insert(name, int(age), nationality)
+            persona.insert(name, int(age), nationality)
             return Response(status=200)
         except:
             return jsonify({'trace': traceback.format_exc()})

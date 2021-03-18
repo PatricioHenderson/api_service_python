@@ -21,6 +21,8 @@ from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
+
+
 class HeartRate(db.Model):
     __tablename__ = "heartrate"
     id = db.Column(db.Integer, primary_key=True)
